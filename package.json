@@ -7,8 +7,10 @@
 		"test-unit": "mocha test/unit-test.js --reporter json --reporter-options output=test/unit-test.json | tee test/unit-test.json"
 	},
 	"dependencies": {
+		"cfenv": "1.2.x",
+		"cors": "^2.8.5",
 		"express": "4.17.x",
-		"cfenv": "1.2.x"
+		"socket.io": "^3.1.1"
 	},
 	"repository": {},
 	"engines": {
