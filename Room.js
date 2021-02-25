@@ -114,6 +114,8 @@ function tryAttack(State, player, playerSocket, users, restart,
     {
         if (start_row !== State.check.row || start_col !== State.check.col)
         {
+            console.log('This bullshit');
+            console.log(start_row, State.check.row, start_col, State.check.col)
             return
         }
     }
@@ -162,7 +164,7 @@ function tryAttack(State, player, playerSocket, users, restart,
             //Player has some attacks and he must choose one of them, so we lock him
             //out of making else other than the attacks currently availible to him
             State.locked = true
-            State.check = { row: end_row, col: enemy_col }
+            State.check = { row: end_row, col: end_col }
             //send locked
             playerSocket.emit('setLocked', true)
             playerSocket.emit('setCheck', { row: end_row, col: end_col })
