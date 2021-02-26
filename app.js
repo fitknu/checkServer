@@ -32,6 +32,7 @@ var appEnv = cfenv.getAppEnv();
 
 
 const Room = require('./Room')
+const Chat = require('./Chat')
 
 const cors = require('cors')
 // @ts-ignore
@@ -91,6 +92,7 @@ app.get('/del_room/:name', (req, res) =>
   }
 })
 
+const myChat = new Chat("Main")
 io.on('connection', socket =>
 {
   socket.on('joinGame', (id, mode) =>
@@ -105,6 +107,7 @@ io.on('connection', socket =>
       console.log(`Search ${id}, ${rooms.map(i => i.id).join(", ")}`);
     }
   })
+  socket.on('joinChat', () => myChat.add(socket))
 })
 
 
