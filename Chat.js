@@ -28,26 +28,24 @@ class Chat
             this.sendMessage("Server", "Пользователь отключился")
             console.log('A user left');
             this.users = this.users.filter(socket => socket !== user)
-        })
-        this.users.forEach(oldUser =>
-        {
-            const peerId = oldUser.peerId
-            if (peerId !== undefined)
+
+            if (user.peerId)
             {
-                console.log('Emitted ' + peerId);
-                user.emit('peerId', peerId)
+                this.users.forEach(oldUser => oldUser.emit('peerGone', user.peerId))
             }
         })
         user.on('peerId', peerId =>
         {
-            console.log('Got a peer id ' + peerId);
+            console.log('Got peerId ' + peerId);
+            // @ts-ignore
             user.peerId = peerId
-            console.log(user.peerId);
-            const index = this.users.findIndex(Olduser => Olduser === user)
-            for (let i = index + 1; i < this.users.length; i++)
+            this.users.forEach(oldUser =>
             {
-                this.users[i].emit('peerId', peerId)
-            }
+                if (oldUser !== user && oldUser.peerId)
+                {
+                    user.emit('peerId', oldUser.peerId)
+                }
+            })
         })
     }
     sendMessage(name, text)

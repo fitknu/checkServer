@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <button id="start">Начать</button>
+    <audio src="" id="audio" autoplay="" controls="">Привет</audio>
+    <!-- <video id="audio"></video> -->
+    <script defer>
+      const audio = document.getElementById("audio");
+      const start = document.getElementById("start");
+      const main = () => {
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => (audio.srcObject = stream))
+          .catch((e) => console.log(e));
+      };
+      main();
+      start.addEventListener("click", () => {
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => (audio.src = stream))
+          .catch((e) => console.log(e));
+      });
+    </script>
+  </body>
+</html>
