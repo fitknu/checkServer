@@ -29,83 +29,77 @@ class Chat
     }
     /**
      * 
-     * @param {Socket & addData} user 
+     * @param {Socket & addData} newUser 
      */
-    add(user)
+    add(newUser)
     {
-        user.on('debug', () => user.emit('debug', JSON.stringify(this.tostr())))
-        user.on('login', name =>
+        newUser.on('debug', () => newUser.emit('debug', JSON.stringify(this.tostr())))
+        newUser.on('login', name =>
         {
-            user.name = name
-            this.users.push(user)
-            user.emit("login", true)
+            newUser.name = name
+            this.users.push(newUser)
 
-            this.users.forEach(oldUser => 
+            // this.usersEmit('newUser', name)
+
+            //Say to everyone that a newUser has joined, exept the newUser
+            this.users.filter(user => user !== newUser).forEach(user => user.emit('newUser', name))
+            newUser.on('message', text => this.usersEmit('message', name, text))
+            newUser.on('disconnect', () =>
             {
-                //Send a notification to everyone(inculding the new user) that a new user joined
-                oldUser.emit('userJoined', name)
-                //Send to current user the old users
-                if (oldUser !== user)
-                {
-                    user.emit('userJoined', oldUser.name)
-                }
-                //Send to current user the currrent people in voice chat
-                if (oldUser.peerId)
-                {
-                    user.emit('userJoinedVoice', oldUser.name)
-                }
+                this.users = this.users.filter(user => user !== newUser)
+                this.usersEmit('userLeft', name)
             })
 
+            newUser.emit("login", true)
+            //Give newUser a list of everyone who joined before, including newUser
+            this.users.forEach(user => newUser.emit('newUser', user.name))
+
+            this.users.filter(user => user.peerId)
+                .forEach(user => newUser.emit('voiceJoined', user.name))
 
 
-            user.on('message', text => this.sendMessage(name, text))
-            user.on('disconnect', () =>
+            //peer stuff
+            newUser.on('peerId', newUserPeerId =>
             {
-                this.users = this.users.filter(oldUser => oldUser != user)
-                this.users.forEach(oldUser => oldUser.emit("userLeft", name))
-            })
+                newUser.peerId = newUserPeerId
 
-            user.on('peerId', peerId =>
-            {
-                user.peerId = peerId
+                //Send peerIds of old users to the new user
+                this.users.filter(user => user.peerId && user !== newUser)
+                    .forEach(user => newUser.emit('peerId', user.peerId))
 
-                const peerLeft = () =>
+                //let it show in users tab
+                this.usersEmit('voiceJoined', newUser.name)
+
+                newUser.on('peerLeft', () =>
                 {
+                    //Delte from users tab
+                    this.usersEmit('voiceLeft', newUser.name)
 
-                    user.peerId = undefined
-                    this.users.forEach(oldUser =>
-                    {
-                        //Remove the leaving user from everyones list
-                        oldUser.emit('userLeftVoice', user.name)
-                        //If the user is currently in the voice chat
-                        if (oldUser.peerId)
-                        {
-                            //Send a messaga for the oldUser to close the connection
-                            oldUser.emit('peerLeft', peerId)
-                        }
-                    })
-                }
-                user.on('myPeerLeft', peerLeft)
-                user.on('disconnect', peerLeft)
+                    //Delte audios from other peers
+                    this.users.filter(user => user.peerId && user !== newUser)
+                        .forEach(user => user.emit('peerLeft', newUser.peerId))
 
-                //Peer joins voice chat, so 
-                user.on('peerCall', otherPeerId =>
-                {
-                    console.log(otherPeerId);
-                    const otherPeer = this.users.find(otherPeer => otherPeer.peerId === otherPeerId)
-                    otherPeer.emit('peerCall', peerId, user.name)
+                    newUser.peerId = undefined
                 })
-                this.users.forEach(oldUser =>
+                newUser.on('disconnect', () =>
                 {
-                    oldUser.emit('userJoinedVoice', user.name)
-                    if (oldUser !== user && oldUser.peerId)
-                    {
-                        user.emit('peerId', oldUser.peerId, oldUser.name)
-                    }
-                })
+                    //Delte from users tab
+                    // this.usersEmit('voiceLeft', newUser.name)
 
+                    //Delte audios from other peers
+                    this.users.filter(user => user.peerId && user !== newUser)
+                        .forEach(user => user.emit('peerLeft', newUser.peerId))
+
+                    newUser.peerId = undefined
+                })
             })
+
+
         })
+    }
+    usersEmit(command, ...args)
+    {
+        this.users.forEach(user => user.emit(command, ...args))
     }
     sendMessage(name, text)
     {

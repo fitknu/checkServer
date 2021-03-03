@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 // hello world app is based on node.js starter application for Bluemix
 //------------------------------------------------------------------------------
-process.env.PORT = 6001
+// process.env.PORT = 6001
 // This application uses express as its web server
 // for more info, see: http://expressjs.com
 var express = require('express');
